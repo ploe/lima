@@ -1,4 +1,4 @@
-Castmember {
+Crew {
 	update = function(self)
 		print("I was made in Lua")
 		return "PAUSE"
@@ -6,7 +6,7 @@ Castmember {
 }
 
 
-Castmember {
+Crew {
 	count = 10,
 	update = function(self)
 		print(self.count)

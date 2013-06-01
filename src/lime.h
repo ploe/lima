@@ -3,6 +3,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+
+#include <SDL/SDL.h>
+
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
@@ -20,6 +23,6 @@ enum {
 
 extern lua_State *L;
 
-#include "Cast.h"
+#include "Crew.h"
 
 #endif
