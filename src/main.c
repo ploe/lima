@@ -43,7 +43,6 @@ static int lnew_Crew(lua_State *L) {
 		
 	}
 	if(lua_istable(L, -1)) {
-		puts("yep, we're a table");
 		luaL_unref(L, LUA_REGISTRYINDEX, c->t);
 		c->t = luaL_ref(L, LUA_REGISTRYINDEX);
 	}
@@ -66,6 +65,7 @@ static Actor *top;
 Actor *new_Actor(char *name) {
 	Actor *a = malloc(sizeof(Actor));
 	if(a) {
+		memset(a, 0, sizeof(Actor));
 		a->next = top;
 		top = a;
 		lua_newtable(L);
@@ -83,7 +83,6 @@ static int lnew_Actor(lua_State *L) {
 		
 	}
 	if(lua_istable(L, -1)) {
-		puts("yep, we're a table");
 		luaL_unref(L, LUA_REGISTRYINDEX, c->t);
 		c->t = luaL_ref(L, LUA_REGISTRYINDEX);
 	}
@@ -113,31 +112,25 @@ Status ACTORS(Crew *actors) {
 	}
 }
 
-static jmp_buf env;
+/*static jmp_buf env;
 
 static int lpanic(lua_State *L) {
 	longjmp(env, -1);
 	return 0;
 }
+*/
 
 int main(int argc, char *argv[]) {
 	new_Crew(STAGE);
 
-//	lua_pushcfunction(L, lnew_Crew);
-//	lua_setglobal(L, "Crew");
+	lua_register(L, "Crew", lnew_Crew);
+	lua_register(L, "Actor", lnew_Actor);
 
-//	lua_pushcfunction(L, lnew_Actor);
-//    lua_setglobal(L, "Actor");
-	puts("yep we're here");
-	lua_atpanic(L, lpanic);
-	puts("panic function set");
-	if(setjmp(env) == 0 ) {
-		//lua_error(L);
-		luaL_loadfile(L, "res/debug.lua");
-		//lua_pcall(L, 0, 0, 0));
-		//fprintf(stderr, "Configuration file was not loaded: %s\n", lua_tostring(L, -1));
+	if(luaL_loadfile(L, "res/debug.lua") || lua_pcall(L, 0, 0, 0)) {
+		fprintf(stderr, "Failed to load configuration file, so scrapped: %s\n", lua_tostring(L, -1));
 		lua_pop(L, 1);
 	}
+
 	while(perform()) continue;
 	return 0;
 }

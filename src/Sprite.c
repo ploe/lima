@@ -7,6 +7,7 @@
 Sprite *new_Sprite(char *file, SDL_Rect clip) {
 	Sprite *s;
 	if(s = malloc(sizeof(Sprite))) {
+		memset(s, 0, sizeof(Sprite));
 		costume_Sprite(s, file);
 		s->clip = clip;
 	}
