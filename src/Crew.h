@@ -22,7 +22,7 @@ enum {
     WRAP
 };
 
-/*	A Crew has three Constructor functions attached to it. If none are set, they default to NULL.
+/*	A Crewman has three Constructor functions attached to it. If none are set, they default to NULL.
 	* type is the Crewman's initialiser, and is also used to identify the type of Crew it is
 	* update is the function the Crewman calls each frame. It returns a Status code.
 	* free is the Crewman's deconstructor	

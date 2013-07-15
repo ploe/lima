@@ -1,18 +1,21 @@
 #include "lime.h"
 #include <string.h>
 
-static Crew *top;
+static Crew *top = NULL;
 
 Crew *new_Crew(Constructor new) {
 	Crew *c = malloc(sizeof(Crew));
 	if(c) {
-		c->type = new;
-		c->free = c->update = NULL;
-		if(new) c->status = new(c);
-		lua_newtable(L);
-		c->t = luaL_ref(L, LUA_REGISTRYINDEX);
 		c->next = top;
 		top = c;
+
+		c->type = new;
+		c->free = c->update = NULL;
+
+		if(new) c->status = new(c);
+
+		lua_newtable(L);
+		c->t = luaL_ref(L, LUA_REGISTRYINDEX);	
 	}
 	else fputs("Failed to allocate new Crew", stderr);
 	return c;

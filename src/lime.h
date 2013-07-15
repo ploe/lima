@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include <SDL/SDL.h>
+#include <SDL/SDL_image.h>
 
 #include <lua.h>
 #include <lauxlib.h>
@@ -24,5 +25,8 @@ enum {
 extern lua_State *L;
 
 #include "Crew.h"
+#include "Stage.h"
+#include "Sprite.h"
+#include "Player.h"
 
 #endif
