@@ -44,7 +44,6 @@ Status STAGE(Crew *stage) {
 	screen = SDL_SetVideoMode(LIME_STAGEWIDTH, LIME_STAGEHEIGHT, 16, SDL_HWSURFACE | SDL_DOUBLEBUF);
 	start = SDL_GetTicks();
 
-
 	L = luaL_newstate();
 	luaL_openlibs(L);
 

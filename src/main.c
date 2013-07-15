@@ -12,7 +12,7 @@ static void stackdump() {
 	int i;
 	int top = lua_gettop(L);
 	for(i = 1; i <= top; i++) {
-		int t = lua_type(L, t);
+		int t = lua_type(L, i);
 		switch(t) {
 			case LUA_TSTRING:
 				printf("Lua string \"%s\"\n", lua_tostring(L, t));
@@ -132,7 +132,7 @@ int main(int argc, char *argv[]) {
 	lua_atpanic(L, lpanic);
 	puts("panic function set");
 	if(setjmp(env) == 0 ) {
-		lua_error(L);
+		//lua_error(L);
 		luaL_loadfile(L, "res/debug.lua");
 		//lua_pcall(L, 0, 0, 0));
 		//fprintf(stderr, "Configuration file was not loaded: %s\n", lua_tostring(L, -1));

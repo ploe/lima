@@ -9,7 +9,7 @@ function filthy:animate()
 	puts("crazee")
 end
 
---myke = Actor {
---	animate = "LOL"
---}
+myke = Actor {
+	animate = "LOL"
+}
 
