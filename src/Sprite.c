@@ -5,9 +5,8 @@
 	Myke you dirty beast. ;)	*/
 
 Sprite *new_Sprite(char *file, SDL_Rect clip) {
-	Sprite *s;
-	if(s = malloc(sizeof(Sprite))) {
-		memset(s, 0, sizeof(Sprite));
+	Sprite *s = calloc(1, sizeof(Sprite));
+	if(s) {
 		costume_Sprite(s, file);
 		s->clip = clip;
 	}
@@ -20,10 +19,10 @@ Sprite *new_Sprite(char *file, SDL_Rect clip) {
 void costume_Sprite(Sprite *s, char *file) {
 	SDL_Surface *tmp = IMG_Load(file);
 	if(tmp) {
+		puts(file);
 		if(s->costume) SDL_FreeSurface(s->costume);
 		s->costume =  SDL_DisplayFormatAlpha(tmp);
 		SDL_FreeSurface(tmp);
-		
 	}	
 }
 

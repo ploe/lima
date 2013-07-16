@@ -13,3 +13,18 @@ myke = Actor {
 	animate = "LOL"
 }
 
+daisy = Actor {
+	tag = "daisy chane",
+	costume = "daisy-flat.png",
+	w = 100,
+	h = 100
+}
+
+print(daisy.costume)
+print(daisy.w)
+print(daisy.h)
+print(daisy.tag)
+
+function myke:cough()
+	print("cough")
+end

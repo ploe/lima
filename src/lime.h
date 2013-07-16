@@ -3,6 +3,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+/*	strmatch - because strcmp returning 0 is always so fucking confusing	*/
+#define strmatch(a, b) !(strcmp(a, b))
 
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>

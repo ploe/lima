@@ -1,10 +1,8 @@
 #include "lime.h"
-#include <string.h>
-
 static Crew *top = NULL;
 
 Crew *new_Crew(Constructor new) {
-	Crew *c = malloc(sizeof(Crew));
+	Crew *c = calloc(1, sizeof(Crew));
 	if(c) {
 		c->next = top;
 		top = c;
@@ -57,15 +55,11 @@ static void purge() {
 /*	lua_update - a Crewman isn't freed unless we say so, so lua_update returns LIVE by default
 	update in the table just returns a string and we translate it to the correct status code	*/
 
-/*	strmatch - because strcmp returning 0 is always so fucking confusing	*/
-
-
 static int getvalue_Crew(Crew *c, const char *key) {
 	lua_rawgeti(L, LUA_REGISTRYINDEX, c->t);
 	lua_getfield(L, -1, key);
 }
 
-#define strmatch(a, b) !(strcmp(a, b))
 
 /*	Since it's only called in one place its name is outside the usual convention of doit_Crew	*/
 static Status lua_update(Crew *c) {
