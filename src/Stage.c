@@ -59,26 +59,26 @@ Status STAGE(Crew *stage) {
 	return LIVE;
 }
 
-static void stackdump() {
+void stackdump() {
 	int i;
 	int top = lua_gettop(L);
 	for(i = 1; i <= top; i++) {
 		int t = lua_type(L, i);
 		switch(t) {
 			case LUA_TSTRING:
-				printf("Lua string \"%s\"\n", lua_tostring(L, t));
+				printf("Lua string \"%s\"\n", lua_tostring(L, i));
 			break;
 
 			case LUA_TBOOLEAN:
-				printf("Lua string \"%s\"\n", lua_toboolean(L, t) ? "true" : "false");
+				printf("Lua string \"%s\"\n", lua_toboolean(L, i) ? "true" : "false");
 			break;
 
 			case LUA_TNUMBER:
-                printf("Lua string \"%g\"\n", lua_tonumber(L, t));
+                printf("Lua string \"%g\"\n", lua_tonumber(L, i));
             break;
 
 			default:
-				printf("%s", lua_typename(L, t));
+				printf("%s", lua_typename(L, i));
 			break;
 
 		}

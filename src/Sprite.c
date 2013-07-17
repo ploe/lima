@@ -4,7 +4,7 @@
 	I don't have to pass an extra 's' param in to new_Sprite.
 	Myke you dirty beast. ;)	*/
 
-Sprite *new_Sprite(char *file, SDL_Rect clip) {
+Sprite *new_Sprite(const char *file, SDL_Rect clip) {
 	Sprite *s = calloc(1, sizeof(Sprite));
 	if(s) {
 		costume_Sprite(s, file);
@@ -16,7 +16,7 @@ Sprite *new_Sprite(char *file, SDL_Rect clip) {
 
 /*	swaps out one surface for another	*/
 
-void costume_Sprite(Sprite *s, char *file) {
+void costume_Sprite(Sprite *s, const char *file) {
 	SDL_Surface *tmp = IMG_Load(file);
 	if(tmp) {
 		puts(file);

@@ -4,5 +4,6 @@
 extern SDL_Surface *screen;
 
 Status STAGE(Crew *);
+void stackdump();
 
 #endif

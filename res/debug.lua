@@ -9,9 +9,9 @@ function filthy:animate()
 	puts("crazee")
 end
 
-myke = Actor {
+--[[myke = Actor {
 	animate = "LOL"
-}
+}]]
 
 daisy = Actor {
 	tag = "daisy chane",
@@ -25,6 +25,17 @@ print(daisy.w)
 print(daisy.h)
 print(daisy.tag)
 
-function myke:cough()
-	print("cough")
+function daisy:animate()
+	return tick
 end
+
+function tock()
+	print("tock")
+	return tick
+end
+
+function tick()
+	print("tick")
+	return tock
+end
+
