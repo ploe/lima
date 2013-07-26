@@ -17,9 +17,9 @@ Sprite *new_Sprite(const char *file, SDL_Rect clip) {
 /*	swaps out one surface for another	*/
 
 void costume_Sprite(Sprite *s, const char *file) {
+	puts(file);
 	SDL_Surface *tmp = IMG_Load(file);
 	if(tmp) {
-		puts(file);
 		if(s->costume) SDL_FreeSurface(s->costume);
 		s->costume =  SDL_DisplayFormatAlpha(tmp);
 		SDL_FreeSurface(tmp);

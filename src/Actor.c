@@ -134,22 +134,69 @@ static int lcostume_Actor(lua_State *L) {
 	return 0;
 }
 
+/*	function Actor:nextclip()	*/
+
+static lnextclip_Actor(lua_State *L) {
+	if(lua_istable(L, -1)) {
+		Actor *a = NULL;
+		lua_getfield(L, -1, "tag");
+		if(lua_isstring(L, -1)) {
+			a = findstr_Actor("tag", lua_tostring(L, -1));
+			nextclip(a->s);
+		}
+	}
+	return 0;
+}
+
+/*	function Actor:prevclip()
+	I hate how these functions are essentially the same implementation.
+	I hope I have a bright idea. This seems to be the cheapest bet for 
+	now. */
+
+static lprevclip_Actor(lua_State *L) {
+	if(lua_istable(L, -1)) {
+		Actor *a = NULL;
+		lua_getfield(L, -1, "tag");
+		if(lua_isstring(L, -1)) {
+			a = findstr_Actor("tag", lua_tostring(L, -1));
+			prevclip(a->s);
+		}
+	}
+	return 0;
+}
+
+static int ljumpreel_Actor(lua_State *L) {
+	if(lua_istable(L, -2)) {
+		Actor *a = NULL;
+		lua_getfield(L, -1, "tag");
+		if(lua_isstring(L, -1)) {
+			a = findstr_Actor("tag", lua_tostring(L, -1));
+			jumpreel(a->s, 1);
+		}
+	}
+	return 0;
+}
+
 Status ACTORS(Crew *actors) {
 	actors->update = ACTORS;
 	lua_register(L, "Actor", lnew_Actor);
+	lua_register(L, "nextclip", lnextclip_Actor);
+	lua_register(L, "prevclip", lprevclip_Actor);
+	lua_register(L, "jumpreel", ljumpreel_Actor);
 	Actor *a;
 	int t = lua_gettop(L);
 	for(a = top; a != NULL; a = a->next) {
 		static SDL_Rect offset = {0, 0, 0, 0};
 		getfield_Actor(a, "animate");
 		lua_rawgeti(L, LUA_REGISTRYINDEX, a->t);
+		stackdump();
 		if(lua_isfunction(L, -2)) {
 			lua_pcall(L, 1, 1, 0);
 			setfield_Actor(a, "animate");
 			lua_pop(L, 1);
 		}
 		else lua_pop(L, 2);
-		if(a->s) draw_Sprite(a->s, offset);
+		draw_Sprite(a->s, offset);
 	}
 	lua_settop(L, t);
 	return LIVE;

@@ -25,17 +25,33 @@ print(daisy.w)
 print(daisy.h)
 print(daisy.tag)
 
+daisy.frame = 0
+
 function daisy:animate()
-	return tick
+	print(self)
+	return self.tick
 end
 
-function tock()
-	print("tock")
-	return tick
+function daisy:tock()
+	if self.frame < 3 then 
+		self.frame = self.frame + 1
+		return self.tock
+	end
+
+	self.frame = 0
+	prevclip(self)
+	return self.tick
 end
 
-function tick()
-	print("tick")
-	return tock
+function daisy:tick()
+	jumpreel(self)
+	if self.frame < 3 then 
+		self.frame = self.frame + 1
+		return self.tick
+	end
+
+	self.frame = 0
+	nextclip(self)
+	return self.tock
 end
 

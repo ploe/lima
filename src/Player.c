@@ -44,7 +44,7 @@ SDL_Rect offset_mouse() {
 	return tmp;
 }
 
-#define CURSOR_DIM 100
+#define CURSOR_DIM 16
 #define CURSOR_LAG 3	
 
 static Sprite *cursor_sprite; 
@@ -52,20 +52,25 @@ static Sprite *cursor_sprite;
 static Status update_cursor(Crew *cursor) {
 	SDL_Rect offset = {mouse.x - CURSOR_DIM / 2, mouse.y - CURSOR_DIM / 2};
 	static int i = CURSOR_LAG;
-	static int frame = 0;
 	if(!i--) {
-		switch(frame++) {
-			case 0: case 1:
-				nextclip(cursor_sprite);
-			break;
-			case 3:
-				frame = 0;
-			case 2:
-				prevclip(cursor_sprite);
-			break;
-		}
+		if(cursor_sprite->clip.x) prevclip(cursor_sprite);
+		else nextclip(cursor_sprite);
 		i = CURSOR_LAG;
 	}
+//	static int frame = 0;
+//	if(!i--) {
+//		switch(frame++) {
+//			case 0: case 1:
+//				nextclip(cursor_sprite);
+//			break;
+//			case 3:
+//				frame = 0;
+//			case 2:
+//				prevclip(cursor_sprite);
+//			break;
+//		}
+//		i = CURSOR_LAG;
+//	}
 	draw_Sprite(cursor_sprite, offset);
 	return LIVE;
 }
@@ -74,11 +79,10 @@ static Status free_cursor(Crew *cursor) {
 	free_Sprite(cursor_sprite);
 }
 
-
 Status CURSOR(Crew *cursor) {
+	SDL_ShowCursor(SDL_DISABLE);
 	SDL_Rect clip = {0, 0, CURSOR_DIM, CURSOR_DIM};
-	cursor_sprite = new_Sprite("daisy-flat.png", clip);
-	jumpreel(cursor_sprite, 1);
+	cursor_sprite = new_Sprite("./res/cursor.png", clip);
 	cursor->update = update_cursor;
 	cursor->free = free_cursor;
 	return LIVE;
