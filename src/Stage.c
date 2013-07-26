@@ -40,6 +40,10 @@ static Status stage_free(Crew *stage) {
 	SDL_Quit();
 }
 
+static int lstackdump(lua_State *L) {
+	stackdump();	
+	return 0;
+}
 
 Status STAGE(Crew *stage) {
 	stage->free = stage_free;
@@ -55,33 +59,39 @@ Status STAGE(Crew *stage) {
 	new_Crew(MOUSE);
 	new_Crew(CURSOR);
 
+	lua_register(L, "stackdump", lstackdump);
 
 	return LIVE;
 }
 
 void stackdump() {
 	int i;
-	int top = lua_gettop(L);
-	for(i = 1; i <= top; i++) {
+	int t = lua_gettop(L);
+	for(i = 1; i <= t; i++) {
 		int t = lua_type(L, i);
 		switch(t) {
 			case LUA_TSTRING:
-				printf("Lua string \"%s\"\n", lua_tostring(L, i));
+				fprintf(stderr, "string: \"%s\" \n", lua_tostring(L, i));
 			break;
 
 			case LUA_TBOOLEAN:
-				printf("Lua string \"%s\"\n", lua_toboolean(L, i) ? "true" : "false");
+				fprintf(stderr, "boolean: %s \n", lua_toboolean(L, i) ? "true" : "false");
 			break;
 
 			case LUA_TNUMBER:
-                printf("Lua string \"%g\"\n", lua_tonumber(L, i));
+                fprintf(stderr, "number: %g \n", lua_tonumber(L, i));
             break;
 
+			case LUA_TNIL:
+                fprintf(stderr, "nil \n");
+			break;
+
 			default:
-				printf("%s", lua_typename(L, i));
+				fprintf(stderr, "%s \n", lua_typename(L, i));
 			break;
 
 		}
 	}
-	printf("\n");
+	lua_settop(L, t);
 }
+

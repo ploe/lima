@@ -63,7 +63,8 @@ static int getvalue_Crew(Crew *c, const char *key) {
 
 /*	Since it's only called in one place its name is outside the usual convention of doit_Crew	*/
 static Status lua_update(Crew *c) {
-	int i = lua_gettop(L);
+	int t = lua_gettop(L);
+	Status s = PAUSE;
 	getvalue_Crew(c, "update");
 
 	if(lua_isfunction(L, -1)) {
@@ -74,16 +75,16 @@ static Status lua_update(Crew *c) {
 
 	if(lua_isstring(L, -1)) {
 		const char *tmp = lua_tostring(L, -1);
-		if(strmatch("LIVE", tmp)) return LIVE;
-		else if(strmatch("CUT", tmp)) return CUT;
-		else if(strmatch("PAUSE", tmp)) return PAUSE;
-		else if(strmatch("WRAP", tmp)) return WRAP;
-		else fprintf(stderr, "%s is not a valid Status. Treating it as LIVE.\n", tmp);
+		if(strmatch("LIVE", tmp)) s = LIVE;
+		else if(strmatch("CUT", tmp)) s = CUT;
+		else if(strmatch("PAUSE", tmp)) s = PAUSE;
+		else if(strmatch("WRAP", tmp)) s = WRAP;
+		else fprintf(stderr, "%s is not a valid Status. Treating it as PAUSE.\n", tmp);
 	}
 	else fputs("Invalid 'update' type. Needs to be a function or a string.\n", stderr);
 
-	lua_settop(L, i);
-	return LIVE;
+	lua_settop(L, t);
+	return s;
 }
 
 #undef strmatch

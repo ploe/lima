@@ -1,3 +1,5 @@
+stackdump()
+
 filthy = Crew {
 	update = function(self)
 		print("I was made in Lua")
@@ -28,7 +30,8 @@ print(daisy.tag)
 daisy.frame = 0
 
 function daisy:animate()
-	print(self)
+	jumpreel(1, self)
+	costume("ploe.png", self)
 	return self.tick
 end
 
@@ -44,7 +47,6 @@ function daisy:tock()
 end
 
 function daisy:tick()
-	jumpreel(self)
 	if self.frame < 3 then 
 		self.frame = self.frame + 1
 		return self.tick
