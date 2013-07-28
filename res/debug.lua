@@ -20,8 +20,33 @@ daisy = Actor {
 	h = 100,
 	ticks = 0,
 	frame = 1,
-	reel = 0
+	reel = 0,
+	visible = true,
+	x = 100,
+	y = 200
 }
+
+brum = Actor {
+	tag = "butthead",
+	costume = "brum.png",
+	visible = true,
+	w = 200,
+	h = 200,
+	x = 20,
+	y = 20
+}
+
+function brum:animate()
+	if self.ticks == 20 then
+		if self.frame == 1 then nextclip(self) 
+		elseif self.frame == 2 then
+			prevclip(self)
+			self.frame = 1
+		end
+	end
+	return self.animate
+end
+
 
 print(daisy.costume)
 print(daisy.w)

@@ -93,6 +93,16 @@ static int lnew_Actor(lua_State *L) {
 		if(lua_isstring(L, -1)) a->s = new_Sprite(lua_tostring(L, -1), clip);
 		nilfield_Actor(a, "costume");
 		lua_pop(L, 1);
+
+		lua_pushnumber(L, 0);
+		setfield_Actor(a, "reel");
+
+		lua_pushnumber(L, 1);
+		setfield_Actor(a, "frame");
+
+		lua_pushnumber(L, 0);
+		setfield_Actor(a, "ticks");
+	
 	}
 	else if(!lua_isnil(L, -1)) fputs("Lua Actor type has to be a table or nil", stderr);
 
@@ -207,18 +217,11 @@ static int ljumpreel_Actor(lua_State *L) {
 	return 0;
 }
 
-Status ACTORS(Crew *actors) {
-	actors->update = ACTORS;
-	lua_register(L, "Actor", lnew_Actor);
-	lua_register(L, "nextclip", lnextclip_Actor);
-	lua_register(L, "prevclip", lprevclip_Actor);
-	lua_register(L, "jumpreel", ljumpreel_Actor);
-	lua_register(L, "costume", lcostume_Actor);
-
-	Actor *a;
+Status update_actors(Crew *actors) {
 	int t = lua_gettop(L);
+	
+	Actor *a;
 	for(a = top; a != NULL; a = a->next) {
-		static SDL_Rect offset = {0, 0, 0, 0};
 
 /*	Increments Actor's tick counter every frame as it removes it from the
 	responsibilty from doing it in Lua - these values can be ignored
@@ -241,8 +244,28 @@ Status ACTORS(Crew *actors) {
 			lua_pop(L, 1);
 		}
 		else lua_pop(L, 2);
-		draw_Sprite(a->s, offset);
+
+		getfield_Actor(a, "visible");
+		if(lua_isboolean(L, -1) && lua_toboolean(L, -1)) { 
+			getfield_Actor(a, "x");
+			getfield_Actor(a, "y");
+			int x = lua_isnumber(L, -2) ? lua_tointeger(L, -2) : 0;
+			int y = lua_isnumber(L, -1) ? lua_tointeger(L, -1) : 0;
+			SDL_Rect offset = {x, y, 0, 0};
+			draw_Sprite(a->s, offset);
+		}
 	}
 	lua_settop(L, t);
+	return LIVE;
+}
+
+Status ACTORS(Crew *actors) {
+	actors->update = update_actors;
+	lua_register(L, "Actor", lnew_Actor);
+	lua_register(L, "nextclip", lnextclip_Actor);
+	lua_register(L, "prevclip", lprevclip_Actor);
+	lua_register(L, "jumpreel", ljumpreel_Actor);
+	lua_register(L, "costume", lcostume_Actor);
+
 	return LIVE;
 }
