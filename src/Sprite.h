@@ -13,6 +13,7 @@ typedef struct Sprite {
 #define jumpclip(s, i) s->clip.x = s->clip.w * i
 #define nextclip(s) s->clip.x += s->clip.w
 #define prevclip(s) s->clip.x -= s->clip.w
+#define jumpclip(s, i) s->clip.x = s->clip.w * i
 
 Sprite *new_Sprite(const char *file, SDL_Rect clip);
 void free_Sprite(Sprite *s);

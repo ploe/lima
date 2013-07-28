@@ -133,43 +133,77 @@ static int lcostume_Actor(lua_State *L) {
 	return 0;
 }
 
+/* 	Actors table that wants working on needs to be at the top of the 
+stack.	Otherwise we don't know what we're looking for */
+
+static Actor *findActor() {
+	Actor *a = NULL;
+	if(lua_istable(L, -1)) {
+		lua_getfield(L, -1, "tag");
+		if(lua_isstring(L, -1)) a = findstr_Actor("tag", lua_tostring(L, -1));
+	}
+	return a;
+}
+
+/*	Increments the frame counter and resets the ticks counter so that we
+	don't have to screw around with them in Lua.	*/
+
+static void lnextframe(Actor *a) {
+	getfield_Actor(a, "frame");
+	if(lua_isnumber(L, -1)) {
+		lua_pushnumber(L, lua_tointeger(L, -1) + 1);
+		setfield_Actor(a, "frame");
+	}
+	lua_pushnumber(L, 0);
+	setfield_Actor(a, "ticks");
+}
+
 /*	function Actor:nextclip()	*/
 
 static lnextclip_Actor(lua_State *L) {
-	if(lua_istable(L, -1)) {
-		Actor *a = NULL;
-		lua_getfield(L, -1, "tag");
-		if(lua_isstring(L, -1)) {
-			a = findstr_Actor("tag", lua_tostring(L, -1));
-			nextclip(a->s);
-		}
+	Actor *a = findActor();
+	if(a) {
+		nextclip(a->s);
+		lnextframe(a);
 	}
 	return 0;
 }
 
-/*	function Actor:prevclip()
-	I hate how these functions are essentially the same implementation.
-	I hope I have a bright idea. This seems to be the cheapest bet for 
-	now. */
+/*	function Actor:nextclip()	*/
 
 static lprevclip_Actor(lua_State *L) {
-	if(lua_istable(L, -1)) {
-		Actor *a = NULL;
-		lua_getfield(L, -1, "tag");
-		if(lua_isstring(L, -1)) {
-			a = findstr_Actor("tag", lua_tostring(L, -1));
-			prevclip(a->s);
-		}
+	Actor *a = findActor();
+	if(a) {
+		prevclip(a->s);
+		lnextframe(a);
 	}
 	return 0;
 }
 
 static int ljumpreel_Actor(lua_State *L) {
-	stackdump();
-	Actor *a = NULL;
-	lua_getfield(L, -1, "tag");
-	a = findstr_Actor("tag", lua_tostring(L, -1));
-	jumpreel(a->s, 1);
+	if(lua_istable(L, -1) && lua_isnumber(L, -2)) {
+		int i = lua_tointeger(L, -2);
+		lua_getfield(L, -1, "tag");
+		if(lua_isstring(L, -1)) 
+		{ 
+			Actor *a = findstr_Actor("tag", lua_tostring(L, -1));
+			jumpreel(a->s, i);
+			lua_pushnumber(L, i);
+			setfield_Actor(a, "reel");
+
+/*	ticks, frame and reel in the Actor's table are dumb control variables.
+	These values aren't necessarily required for the animate functions,
+	they can be called anything. This just simplifies the implementation
+	overall. */
+
+			jumpclip(a->s, 0);
+			lua_pushnumber(L, 1);
+			setfield_Actor(a, "frame");
+
+			lua_pushnumber(L, 0);
+			setfield_Actor(a, "ticks");
+		}
+	}
 	return 0;
 }
 
@@ -185,6 +219,20 @@ Status ACTORS(Crew *actors) {
 	int t = lua_gettop(L);
 	for(a = top; a != NULL; a = a->next) {
 		static SDL_Rect offset = {0, 0, 0, 0};
+
+/*	Increments Actor's tick counter every frame as it removes it from the
+	responsibilty from doing it in Lua - these values can be ignored
+	though, or set.	*/
+
+		getfield_Actor(a, "ticks");
+		if(lua_isnumber(L, -1)) {
+			lua_pushnumber(L, lua_tointeger(L, -1) + 1);
+			setfield_Actor(a, "ticks");
+		}
+		lua_pop(L, 1);
+
+/*	animate function returns animate functions, ad nauseum.	*/
+
 		getfield_Actor(a, "animate");
 		lua_rawgeti(L, LUA_REGISTRYINDEX, a->t);
 		if(lua_isfunction(L, -2)) {
