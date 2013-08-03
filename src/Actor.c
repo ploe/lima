@@ -2,12 +2,16 @@
 
 static Actor *top = NULL;
 
+static int lprototype_Actor;
+
 Actor *new_Actor(char *name) {
 	Actor *a = calloc(1, sizeof(Actor));
 	if(a) {
 		a->next = top;
 		top = a;
 		lua_newtable(L);
+		lua_rawgeti(L, LUA_REGISTRYINDEX, lprototype_Actor);
+		lua_setmetatable(L, -2);
 		a->t = luaL_ref(L, LUA_REGISTRYINDEX);
 	}
 	else fputs("Failed to allocate new Actor", stderr);
@@ -45,7 +49,7 @@ static int setfield_Actor(Actor *a, const char *key) {
 static int nilfield_Actor(Actor *a, const char *key) {
 	lua_rawgeti(L, LUA_REGISTRYINDEX, a->t);
 	lua_pushnil(L);
-    lua_setfield(L, -2, key);
+	lua_setfield(L, -2, key);
 	lua_pop(L, 1);
 }
 
@@ -107,6 +111,9 @@ static int lnew_Actor(lua_State *L) {
 	else if(!lua_isnil(L, -1)) fputs("Lua Actor type has to be a table or nil", stderr);
 
 	lua_rawgeti(L, LUA_REGISTRYINDEX, a->t);
+	lua_rawgeti(L, LUA_REGISTRYINDEX, lprototype_Actor);
+	lua_setmetatable(L, -2);
+
 	return 1;
 }
 
@@ -259,13 +266,47 @@ Status update_actors(Crew *actors) {
 	return LIVE;
 }
 
+/*	sets method on table at top of stack	*/
+
+static void setmethod(char *key, void *function) {
+	if(lua_istable(L, -1)) {
+		lua_pushcfunction(L, function);
+		lua_setfield(L, -2, key);
+	}
+}
+
+int lnewindex_Actor(lua_State *L) {
+	const char *key = lua_tostring(L, -2);
+	if(
+		strmatch(key, "nextclip") ||
+		strmatch(key, "prevclip") ||
+		strmatch(key, "jumpreel") ||
+		strmatch(key, "costume")
+	) fprintf(stderr, "%s not set since it's an Actor method.\n", key);
+	else lua_rawset(L, -3);
+	return 0;
+}
+
 Status ACTORS(Crew *actors) {
 	actors->update = update_actors;
+
+/*	Actor constructor	*/
 	lua_register(L, "Actor", lnew_Actor);
-	lua_register(L, "nextclip", lnextclip_Actor);
-	lua_register(L, "prevclip", lprevclip_Actor);
-	lua_register(L, "jumpreel", ljumpreel_Actor);
-	lua_register(L, "costume", lcostume_Actor);
+
+/*	metatable, __index and __newindex	*/
+	lua_newtable(L);
+	
+	lua_newtable(L);
+	setmethod("nextclip", lnextclip_Actor);
+	setmethod("prevclip", lprevclip_Actor);
+	setmethod("jumpreel", ljumpreel_Actor);
+	setmethod("costume", lcostume_Actor);
+	lua_setfield(L, -2, "__index");
+
+	lua_pushcfunction(L, lnewindex_Actor);
+	lua_setfield(L, -2, "__newindex");
+
+	lprototype_Actor = luaL_ref(L, LUA_REGISTRYINDEX);
 
 	return LIVE;
 }

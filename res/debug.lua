@@ -38,9 +38,9 @@ brum = Actor {
 
 function brum:animate()
 	if self.ticks == 20 then
-		if self.frame == 1 then nextclip(self) 
+		if self.frame == 1 then self:nextclip() 
 		elseif self.frame == 2 then
-			prevclip(self)
+			self:prevclip()
 			self.frame = 1
 		end
 	end
@@ -73,8 +73,8 @@ function daisy:boil()
 	if self.reel ~= 0 then jumpreel(0, self) end
 
 	if self.ticks == 3 then
-		if (is_even(self.frame)) then prevclip(self)
-		else nextclip(self) end
+		if (is_even(self.frame)) then self:prevclip()
+		else self:nextclip() end
 	end
 
 	return self.boil
@@ -89,10 +89,10 @@ function daisy:run()
 	if self.ticks == 3 then
 		if self.frame == 1 
 		or self.frame == 2 then
-			nextclip(self)
+			self:nextclip()
 		elseif self.frame == 3
 		or self.frame == 4 then
-			prevclip(self)
+			self:prevclip()
 		end
 
 		if self.frame > 4 then self.frame = 1 end
@@ -102,3 +102,5 @@ function daisy:run()
 	
 	return self.run	
 end
+
+daisy.costume = "set me more"
