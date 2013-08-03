@@ -50,7 +50,8 @@ SDL_Rect offset_mouse() {
 static Sprite *cursor_sprite; 
 
 static Status update_cursor(Crew *cursor) {
-	SDL_Rect offset = {mouse.x - CURSOR_DIM / 2, mouse.y - CURSOR_DIM / 2};
+	SDL_Rect viewport = getviewport_Stage();
+	SDL_Rect offset = {viewport.x + mouse.x - CURSOR_DIM / 2, viewport.y + mouse.y - CURSOR_DIM / 2};
 	static int i = CURSOR_LAG;
 	if(!i--) {
 		if(cursor_sprite->clip.x) prevclip(cursor_sprite);

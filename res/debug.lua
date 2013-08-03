@@ -32,8 +32,8 @@ brum = Actor {
 	visible = true,
 	w = 200,
 	h = 200,
-	x = 20,
-	y = 20
+	x = 0,
+	y = 400
 }
 
 function brum:animate()
@@ -46,7 +46,6 @@ function brum:animate()
 	end
 	return self.animate
 end
-
 
 print(daisy.costume)
 print(daisy.w)
@@ -97,7 +96,9 @@ function daisy:run()
 		end
 
 		if self.frame > 4 then self.frame = 1 end
+		self.x = self.x + 40
 	end
+
 	
 	return self.run	
 end

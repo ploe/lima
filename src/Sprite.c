@@ -32,6 +32,19 @@ void free_Sprite(Sprite *s) {
 	free(s);
 }
 
+/*	The collision detection macros	*/
+
+#define LEFT(r) (r.x)
+#define RIGHT(r) (r.x + r.w)
+#define TOP(r) (r.y)
+#define BOTTOM(r) (r.y + r.h)
+
+#define X_INSIDE(r, v) (!( (LEFT(r) > RIGHT(v)) || (RIGHT(r) < LEFT(v)) ))
+#define Y_INSIDE(r, v) (!( (TOP(r) > BOTTOM(v)) || (BOTTOM(r) < TOP(v)) ))
+#define COLLISION(r, v) (X_INSIDE(r, v) && Y_INSIDE(r, v))
+
 void draw_Sprite(Sprite *s, SDL_Rect offset) {
-	SDL_BlitSurface(s->costume, &(s->clip), screen, &offset);
+	offset.w = s->clip.w; offset.h = s->clip.h;
+	SDL_Rect viewport = getviewport_Stage();
+	if (COLLISION(offset, viewport)) SDL_BlitSurface(s->costume, &(s->clip), port, &offset);
 }
