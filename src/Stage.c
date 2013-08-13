@@ -47,7 +47,12 @@ int new_Scene(int w, int h) {
 
 static SDL_Rect viewport = {0, 0, LIME_STAGEWIDTH, LIME_STAGEHEIGHT};
 void setviewport_Stage(int x, int y) {
+	if(x < 0) x = 0;
+	else if(x > scene_dim.w - LIME_STAGEWIDTH) x = scene_dim.w - LIME_STAGEWIDTH;
 	viewport.x = x;
+
+	if(y < 0) y = 0;
+	else if(y > scene_dim.y) x = scene_dim.y;
 	viewport.y = y;
 }
 
@@ -65,7 +70,7 @@ static Status stage_update(Crew *stage) {
 	start = SDL_GetTicks();
 	SDL_BlitSurface(port, &viewport, screen, &LIME_SCREENDIM);
 	SDL_Flip(screen);
-	SDL_FillRect(screen, &LIME_SCREENDIM, SDL_MapRGBA(screen->format, 0, 128, 128, 0));
+	SDL_FillRect(screen, &LIME_SCREENDIM, SDL_MapRGBA(screen->format, 0, 0, 0, 0));
 	SDL_FillRect(port, &scene_dim, SDL_MapRGBA(screen->format, 0, 128, 128, 0));
 	return LIVE;
 }
@@ -80,6 +85,17 @@ static Status stage_free(Crew *stage) {
 static int lstackdump(lua_State *L) {
 	stackdump();	
 	return 0;
+}
+
+Status ViewShifter(Crew *viewshifter) {
+	viewshifter->update = ViewShifter;
+	static int x = 0, y = 0, vx = 8, vy = 8;
+	if(x < 0 || x > scene_dim.w) vx = -vx;
+	//if(y < 0 || y > scene_dim.h) vy = -vy;
+	x -= vx;
+	//y -= vy;
+	setviewport_Stage(x, viewport.y);
+	return LIVE;
 }
 
 Status STAGE(Crew *stage) {
@@ -98,7 +114,9 @@ Status STAGE(Crew *stage) {
 
 	new_Crew(MOUSE);
 	new_Crew(CURSOR);
+	new_Crew(ViewShifter);
 
+	lua_register(L, "stackdump", lstackdump);
 	lua_register(L, "stackdump", lstackdump);
 
 	return LIVE;

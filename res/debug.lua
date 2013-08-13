@@ -36,6 +36,16 @@ brum = Actor {
 	y = 400
 }
 
+Actor {
+	tag = "brum",
+	costume = "brum.png",
+	visible = true,
+	w = 200,
+	h = 200,
+	x = 600,
+	y = 100
+}
+
 function brum:animate()
 	if self.ticks == 20 then
 		if self.frame == 1 then self:nextclip() 

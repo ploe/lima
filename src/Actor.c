@@ -37,7 +37,7 @@ static int getfield_Actor(Actor *a, const char *key) {
 	lua_remove(L, -2);
 }
 
-/*	sets Actor's field to top of stack	*/
+/*	sets Actor's field at top of stack	*/
 
 static int setfield_Actor(Actor *a, const char *key) {
 	lua_rawgeti(L, LUA_REGISTRYINDEX, a->t);
@@ -67,6 +67,24 @@ static Actor *findstr_Actor(const char *key, const char *value) {
 	return a;
 }
 
+/*	find_Actor - gets the physical address of the Actor at the specified 
+	index	*/
+
+static Actor *find_Actor(int i) {
+	Actor *a = NULL;
+	if(lua_istable(L, i)) {
+		lua_getfield(L, i, "tag");
+		if(lua_isstring(L, -1)) a = findstr_Actor("tag", lua_tostring(L, -1));
+	}
+	return a;
+}
+
+/*	lnew_Actor - function Actor(self)
+	we tear the Sprite information out of Lua. We do this because these
+	attributes are only valid for init, the rest of the time they're stored
+	in engine out of harm's way. */
+
+
 static int lnew_Actor(lua_State *L) {
 	Actor *a;
 	if(!(a = new_Actor(NULL))) {
@@ -77,10 +95,6 @@ static int lnew_Actor(lua_State *L) {
 	if(lua_istable(L, -1)) {
 		luaL_unref(L, LUA_REGISTRYINDEX, a->t);
 		a->t = luaL_ref(L, LUA_REGISTRYINDEX);
-
-/*	we tear the Sprite information out of Lua. We do this because these
-	attributes are only valid for init, the rest of the time they're stored
-	in engine out of harm's way. */
 
 		SDL_Rect clip = {0, 0, 0, 0};
 		getfield_Actor(a, "w");
@@ -137,30 +151,22 @@ myke = Actor {
 /*	function Actor:costume(file)	*/
 
 static int lcostume_Actor(lua_State *L) {
-	if(lua_istable(L, -1)) {
-		Actor *a = NULL;
-		lua_getfield(L, -1, "tag");
-		if(lua_isstring(L, -1) && lua_isstring(L, -3)) {
-			a = findstr_Actor("tag", lua_tostring(L, -1));
-			costume_Sprite(a->s, lua_tostring(L, -3));
-			lua_pushboolean(L, TRUE);
-			return 1;
-		}
+	#define table 2
+	#define file 1
+	Actor *a = find_Actor(table);
+	if(a && lua_isstring(L, file)) {
+		costume_Sprite(a->s, lua_tostring(L, file));
+		lua_pushboolean(L, TRUE);
+		return 1;
 	}
 	return 0;
+	#undef table
+	#undef file
 }
 
 /* 	Actors table that wants working on needs to be at the top of the 
 stack.	Otherwise we don't know what we're looking for */
 
-static Actor *findActor() {
-	Actor *a = NULL;
-	if(lua_istable(L, -1)) {
-		lua_getfield(L, -1, "tag");
-		if(lua_isstring(L, -1)) a = findstr_Actor("tag", lua_tostring(L, -1));
-	}
-	return a;
-}
 
 /*	Increments the frame counter and resets the ticks counter so that we
 	don't have to screw around with them in Lua.	*/
@@ -178,7 +184,7 @@ static void lnextframe(Actor *a) {
 /*	function Actor:nextclip()	*/
 
 static lnextclip_Actor(lua_State *L) {
-	Actor *a = findActor();
+	Actor *a = find_Actor(1);
 	if(a) {
 		nextclip(a->s);
 		lnextframe(a);
@@ -189,7 +195,7 @@ static lnextclip_Actor(lua_State *L) {
 /*	function Actor:nextclip()	*/
 
 static lprevclip_Actor(lua_State *L) {
-	Actor *a = findActor();
+	Actor *a = find_Actor(1);
 	if(a) {
 		prevclip(a->s);
 		lnextframe(a);
@@ -197,21 +203,23 @@ static lprevclip_Actor(lua_State *L) {
 	return 0;
 }
 
+/*	ljumpreel_Actor - function Actor:jumpreel(reel)
+	ticks, frame and reel in the Actor's table are dumb control variables.
+	These values aren't necessarily required for the animate functions,
+	they can be called anything. This just simplifies the implementation
+	overall.	*/
+
 static int ljumpreel_Actor(lua_State *L) {
-	if(lua_istable(L, -1) && lua_isnumber(L, -2)) {
-		int i = lua_tointeger(L, -2);
-		lua_getfield(L, -1, "tag");
-		if(lua_isstring(L, -1)) 
-		{ 
-			Actor *a = findstr_Actor("tag", lua_tostring(L, -1));
+	#define table 2
+	#define reel 1
+
+	if(lua_isnumber(L, reel)) {
+		int i = lua_tointeger(L, reel);
+		Actor *a = find_Actor(table);
+		if(a) {
 			jumpreel(a->s, i);
 			lua_pushnumber(L, i);
 			setfield_Actor(a, "reel");
-
-/*	ticks, frame and reel in the Actor's table are dumb control variables.
-	These values aren't necessarily required for the animate functions,
-	they can be called anything. This just simplifies the implementation
-	overall. */
 
 			jumpclip(a->s, 0);
 			lua_pushnumber(L, 1);
@@ -222,6 +230,8 @@ static int ljumpreel_Actor(lua_State *L) {
 		}
 	}
 	return 0;
+	#undef table
+	#undef reel
 }
 
 Status update_actors(Crew *actors) {
