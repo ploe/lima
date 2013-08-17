@@ -44,7 +44,7 @@ void free_Sprite(Sprite *s) {
 #define COLLISION(r, v) (X_INSIDE(r, v) && Y_INSIDE(r, v))
 
 void draw_Sprite(Sprite *s, SDL_Rect offset) {
-	offset.w = s->clip.w; offset.h = s->clip.h;
-	SDL_Rect viewport = getviewport_Stage();
-	if (COLLISION(offset, viewport)) SDL_BlitSurface(s->costume, &(s->clip), port, &offset);
+	SDL_Rect viewport = getviewport_Stage(), clip = s->clip;
+	offset.w = clip.w; offset.h = clip.h;
+	if (COLLISION(offset, viewport)) SDL_BlitSurface(s->costume, &clip, port, &offset);
 }

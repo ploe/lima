@@ -20,10 +20,11 @@ daisy = Actor {
 	h = 100,
 	ticks = 0,
 	frame = 1,
-	reel = 0,
+	reel = 1,
 	visible = true,
 	x = 100,
-	y = 200
+	y = 200,
+	vector = 10
 }
 
 brum = Actor {
@@ -36,17 +37,8 @@ brum = Actor {
 	y = 400
 }
 
-Actor {
-	tag = "brum",
-	costume = "brum.png",
-	visible = true,
-	w = 200,
-	h = 200,
-	x = 600,
-	y = 100
-}
-
 function brum:animate()
+	if self.reel ~= 2 then self:jumpreel(2) end
 	if self.ticks == 20 then
 		if self.frame == 1 then self:nextclip() 
 		elseif self.frame == 2 then
@@ -64,7 +56,7 @@ print(daisy.tag)
 
 
 function daisy:animate()
-	return self.boil	
+	return self.run	
 end
 
 -- Don't want to divide by zero...
@@ -80,12 +72,13 @@ nextclip, prevclip and jumpclip could all increment the frame counter
 which again removes a little more of the boilerplate stuff. ]]
 
 function daisy:boil()
-	if self.reel ~= 0 then jumpreel(0, self) end
+	if self.reel ~= 0 then self:jumpreel(0) end
 
 	if self.ticks == 3 then
 		if (is_even(self.frame)) then self:prevclip()
 		else self:nextclip() end
 	end
+	self.x = self.x - self.vector
 
 	return self.boil
 end
@@ -94,7 +87,7 @@ end
 -- perhaps I should call it setreel? Shorter... though the word jumpreel looks more... right!
 
 function daisy:run()
-	if self.reel ~= 1 then jumpreel(1, self) end
+	if self.reel ~= 1 then self:jumpreel(1) end
 
 	if self.ticks == 3 then
 		if self.frame == 1 
@@ -105,12 +98,12 @@ function daisy:run()
 			self:prevclip()
 		end
 
-		if self.frame > 4 then self.frame = 1 end
-		self.x = self.x + 40
+		if self.frame == 5 then self.frame = 1 end
 	end
+	self:focus()
+	self.x = self.x - self.vector
+	if self.x < -100 or self.x > 1366 then self.vector = -self.vector end
 
-	
 	return self.run	
 end
 
-daisy.costume = "set me more"

@@ -210,8 +210,8 @@ static lprevclip_Actor(lua_State *L) {
 	overall.	*/
 
 static int ljumpreel_Actor(lua_State *L) {
-	#define table 2
-	#define reel 1
+	#define table 1
+	#define reel 2
 
 	if(lua_isnumber(L, reel)) {
 		int i = lua_tointeger(L, reel);
@@ -232,6 +232,29 @@ static int ljumpreel_Actor(lua_State *L) {
 	return 0;
 	#undef table
 	#undef reel
+}
+
+#define raw_getfield(x, f) lua_pushstring(L, f); lua_rawget(L, x)
+
+static int lfocus_Actor(lua_State *L) {
+	#define table 1
+	Actor *a = find_Actor(table);
+	if(a) {
+		raw_getfield(table, "x");
+		raw_getfield(table, "y");
+		if(lua_isnumber(L, -2) && lua_isnumber(L, -1)) {
+			int x = lua_tointeger(L, -2) + (a->s->clip.w / 2);
+			int y = lua_tointeger(L, -1) + (a->s->clip.h / 2);
+
+			SDL_Rect v = getviewport_Stage();
+			x -= v.w / 2;
+			y -= v.h / 2;
+
+			setviewport_Stage(x, y);
+		}
+	}
+	return 0;
+	#undef table
 }
 
 Status update_actors(Crew *actors) {
@@ -291,7 +314,8 @@ int lnewindex_Actor(lua_State *L) {
 		strmatch(key, "nextclip") ||
 		strmatch(key, "prevclip") ||
 		strmatch(key, "jumpreel") ||
-		strmatch(key, "costume")
+		strmatch(key, "costume") ||
+		strmatch(key, "focus")
 	) fprintf(stderr, "%s not set since it's an Actor method.\n", key);
 	else lua_rawset(L, -3);
 	return 0;
@@ -311,6 +335,7 @@ Status ACTORS(Crew *actors) {
 	setmethod("prevclip", lprevclip_Actor);
 	setmethod("jumpreel", ljumpreel_Actor);
 	setmethod("costume", lcostume_Actor);
+	setmethod("focus", lfocus_Actor);
 	lua_setfield(L, -2, "__index");
 
 	lua_pushcfunction(L, lnewindex_Actor);

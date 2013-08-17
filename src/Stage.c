@@ -45,19 +45,18 @@ int new_Scene(int w, int h) {
 	return NO;
 }
 
-static SDL_Rect viewport = {0, 0, LIME_STAGEWIDTH, LIME_STAGEHEIGHT};
+static SDL_Rect viewport, viewport_buffer = {0, 0, LIME_STAGEWIDTH, LIME_STAGEHEIGHT};
 void setviewport_Stage(int x, int y) {
 	if(x < 0) x = 0;
 	else if(x > scene_dim.w - LIME_STAGEWIDTH) x = scene_dim.w - LIME_STAGEWIDTH;
-	viewport.x = x;
+	viewport_buffer.x = x;
 
-	if(y < 0) y = 0;
-	else if(y > scene_dim.y) x = scene_dim.y;
-	viewport.y = y;
+	if(y < 0)  y = 0;
+	else if(y > scene_dim.h - LIME_STAGEHEIGHT)  y = scene_dim.h - LIME_STAGEHEIGHT;
+	viewport_buffer.y = y;
 }
 
 SDL_Rect getviewport_Stage() {
-	SDL_Rect v = viewport;
 	return viewport;
 }
 
@@ -70,6 +69,7 @@ static Status stage_update(Crew *stage) {
 	start = SDL_GetTicks();
 	SDL_BlitSurface(port, &viewport, screen, &LIME_SCREENDIM);
 	SDL_Flip(screen);
+	viewport = viewport_buffer;
 	SDL_FillRect(screen, &LIME_SCREENDIM, SDL_MapRGBA(screen->format, 0, 0, 0, 0));
 	SDL_FillRect(port, &scene_dim, SDL_MapRGBA(screen->format, 0, 128, 128, 0));
 	return LIVE;
@@ -104,17 +104,18 @@ Status STAGE(Crew *stage) {
 
 	SDL_Init(SDL_INIT_EVERYTHING);
 	screen = SDL_SetVideoMode(LIME_STAGEWIDTH, LIME_STAGEHEIGHT, LIME_STAGEBPP, SDL_HWSURFACE | SDL_DOUBLEBUF);
-	new_Scene(800, 600);
+	viewport = viewport_buffer;
+	new_Scene(1366, 1366);
 	start = SDL_GetTicks();
 
 	L = luaL_newstate();
 	luaL_openlibs(L);
 
-	setviewport_Stage(100, 100);
+	setviewport_Stage(0, 0);
 
 	new_Crew(MOUSE);
 	new_Crew(CURSOR);
-	new_Crew(ViewShifter);
+	//new_Crew(ViewShifter);
 
 	lua_register(L, "stackdump", lstackdump);
 	lua_register(L, "stackdump", lstackdump);
@@ -129,19 +130,19 @@ void stackdump() {
 		int t = lua_type(L, i);
 		switch(t) {
 			case LUA_TSTRING:
-				fprintf(stderr, "string: \"%s\" \n", lua_tostring(L, i));
+				fprintf(stderr, "%d: string: \"%s\" \n", i, lua_tostring(L, i));
 			break;
 
 			case LUA_TBOOLEAN:
-				fprintf(stderr, "boolean: %s \n", lua_toboolean(L, i) ? "true" : "false");
+				fprintf(stderr, "%d: boolean: %s \n", i, lua_toboolean(L, i) ? "true" : "false");
 			break;
 
 			case LUA_TNUMBER:
-                fprintf(stderr, "number: %g \n", lua_tonumber(L, i));
+                fprintf(stderr, "%d: number: %g \n", i, lua_tonumber(L, i));
             break;
 
 			default:
-				fprintf(stderr, "%s \n", lua_typename(L, i));
+				fprintf(stderr, "%d: %s \n", i, lua_typename(L, i));
 			break;
 		}
 	}
