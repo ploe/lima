@@ -82,20 +82,26 @@ static Status stage_free(Crew *stage) {
 	SDL_Quit();
 }
 
+static int lnew_Crew(lua_State *L) {
+	Crew *c;
+	if(!(c = new_Crew(NULL))) {
+		lua_pushnil(L);
+		return 0;
+		
+	}
+	if(lua_istable(L, -1)) {
+		luaL_unref(L, LUA_REGISTRYINDEX, c->t);
+		c->t = luaL_ref(L, LUA_REGISTRYINDEX);
+	}
+	else if(!lua_isnil(L, -1)) fputs("Lua Crew type has to be a table or nil", stderr);
+
+	lua_rawgeti(L, LUA_REGISTRYINDEX, c->t);
+	return 1;
+}
+
 static int lstackdump(lua_State *L) {
 	stackdump();	
 	return 0;
-}
-
-Status ViewShifter(Crew *viewshifter) {
-	viewshifter->update = ViewShifter;
-	static int x = 0, y = 0, vx = 8, vy = 8;
-	if(x < 0 || x > scene_dim.w) vx = -vx;
-	//if(y < 0 || y > scene_dim.h) vy = -vy;
-	x -= vx;
-	//y -= vy;
-	setviewport_Stage(x, viewport.y);
-	return LIVE;
 }
 
 Status STAGE(Crew *stage) {
@@ -111,17 +117,23 @@ Status STAGE(Crew *stage) {
 	L = luaL_newstate();
 	luaL_openlibs(L);
 
-	setviewport_Stage(0, 0);
-
 	new_Crew(MOUSE);
 	new_Crew(CURSOR);
-	//new_Crew(ViewShifter);
+	new_Crew(ACTORS);
 
+	lua_register(L, "Crew", lnew_Crew);
 	lua_register(L, "stackdump", lstackdump);
-	lua_register(L, "stackdump", lstackdump);
+
+	if(luaL_loadfile(L, "res/debug.lua") || lua_pcall(L, 0, 0, 0)) {
+		fprintf(stderr, "Failed to load configuration file, so scrapped: %s\n", lua_tostring(L, -1));
+		lua_pop(L, 1);
+	}
 
 	return LIVE;
 }
+
+/*	stackdump is a debug function. It prints the stack it goes 
+	'[index]: [type] [value]'	*/
 
 void stackdump() {
 	int i;
@@ -130,22 +142,21 @@ void stackdump() {
 		int t = lua_type(L, i);
 		switch(t) {
 			case LUA_TSTRING:
-				fprintf(stderr, "%d: string: \"%s\" \n", i, lua_tostring(L, i));
+				fprintf(stderr, "%d: string => \"%s\" \n", i, lua_tostring(L, i));
 			break;
 
 			case LUA_TBOOLEAN:
-				fprintf(stderr, "%d: boolean: %s \n", i, lua_toboolean(L, i) ? "true" : "false");
+				fprintf(stderr, "%d: boolean => %s \n", i, lua_toboolean(L, i) ? "true" : "false");
 			break;
 
 			case LUA_TNUMBER:
-                fprintf(stderr, "%d: number: %g \n", i, lua_tonumber(L, i));
+                fprintf(stderr, "%d: number => %g \n", i, lua_tonumber(L, i));
             break;
 
 			default:
-				fprintf(stderr, "%d: %s \n", i, lua_typename(L, i));
+				fprintf(stderr, "%d: %s \n", i, lua_typename(L, t));
 			break;
 		}
 	}
 	lua_settop(L, t);
 }
-

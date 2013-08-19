@@ -9,6 +9,20 @@ function filthy:animate()
 	puts("crazee")
 end
 
+signaltest = Crew {
+	update = function(self)
+		if persist and emit then 
+			persist("hello, world")
+			emit { tag = "lolemit", racist = "yes"  }
+			emit { notag = true  }
+			if signal "hello, world" then print("hello world is emitted") end
+			if signal "lolemit" then print("emitted nil") end
+			return "CUT"
+		end
+		return "LIVE"
+	end
+}
+
 --[[myke = Actor {
 	animate = "LOL"
 }]]

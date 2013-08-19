@@ -8,6 +8,9 @@
 /*	strmatch - because strcmp returning 0 is always so fucking confusing	*/
 #define strmatch(a, b) !(strcmp(a, b))
 
+/*	raw_getfield - gets a field from a table	*/
+#define raw_getfield(x, f) lua_pushstring(L, f); lua_rawget(L, x)
+
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
 

@@ -234,8 +234,6 @@ static int ljumpreel_Actor(lua_State *L) {
 	#undef reel
 }
 
-#define raw_getfield(x, f) lua_pushstring(L, f); lua_rawget(L, x)
-
 static int lfocus_Actor(lua_State *L) {
 	#define table 1
 	Actor *a = find_Actor(table);
