@@ -117,9 +117,11 @@ Status STAGE(Crew *stage) {
 	L = luaL_newstate();
 	luaL_openlibs(L);
 
-	new_Crew(MOUSE);
-	new_Crew(CURSOR);
+	new_Crew(SIGNALS);
 	new_Crew(ACTORS);
+	new_Crew(CURSOR);
+	new_Crew(MOUSE);
+	new_Crew(KEYBOARD);
 
 	lua_register(L, "Crew", lnew_Crew);
 	lua_register(L, "stackdump", lstackdump);

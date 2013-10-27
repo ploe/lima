@@ -36,5 +36,6 @@ extern lua_State *L;
 #include "Sprite.h"
 #include "Player.h"
 #include "Actor.h"
+#include "Signal.h"
 
 #endif

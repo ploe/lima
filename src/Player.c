@@ -9,18 +9,19 @@ static Mouse mouse;
 
 // static Status mouse_update = 
 
-Status MOUSE(Crew *this) {
-	if(this->update != MOUSE) {
-		this->update = MOUSE;
-	}
-	SDL_Event event;
-	while(SDL_PollEvent(&event)) {
-		switch(event.type) {
-			case SDL_QUIT:
-				return WRAP;
-			break;
+SDL_Joystick *joystick;
+#define X_AXIS 0
+#define Y_AXIS 1
 
- 			case SDL_MOUSEBUTTONDOWN:   /*  all button handling done by routines    */
+static Status update_player(Crew *this) {
+	SDL_Event event;
+    while(SDL_PollEvent(&event)) {
+        switch(event.type) {
+            case SDL_QUIT:
+                return WRAP;
+            break;
+
+            case SDL_MOUSEBUTTONDOWN:   /*  all button handling done by routines    */
                 if((event.button.button == SDL_BUTTON_LEFT)) puts("left");
                 else if((event.button.button == SDL_BUTTON_RIGHT)) puts("right");
                 else if((event.button.button == SDL_BUTTON_WHEELUP)) puts("wheelup");
@@ -31,9 +32,41 @@ Status MOUSE(Crew *this) {
                 mouse.x = event.motion.x;
                 mouse.y = event.motion.y;
             break;
-		}
-	}
-	mouse.over = NULL;
+
+			case SDL_JOYAXISMOTION:
+				if((event.jaxis.which == 0)) {
+					if(event.jaxis.axis == X_AXIS) {
+						printf("x axis value: %d\n", event.jaxis.value);
+						if ( ( event.jaxis.value > -8000 ) && ( event.jaxis.value < 8000 ) ) break;
+						if(event.jaxis.value < 0) emit("PLAYER_LEFT");
+						else if(event.jaxis.value > 0) emit("PLAYER_RIGHT");
+					}
+				}
+			break;
+        }
+    }
+	return LIVE;
+}
+
+Status MOUSE(Crew *this) {
+	this->update = update_player;
+	if(SDL_NumJoysticks() >= 1) joystick = SDL_JoystickOpen(0);
+	return LIVE;
+}
+
+Status KEYBOARD(Crew *keyboard) {
+	keyboard->update = KEYBOARD;
+	static Uint8 *key;
+	key = SDL_GetKeyState(NULL);
+
+	if(key[SDLK_LEFT]) emit("PLAYER_LEFT");
+	if(key[SDLK_RIGHT]) emit("PLAYER_RIGHT");
+
+	if(key[SDLK_ESCAPE]) return WRAP;
+	return LIVE;
+}
+
+Status GAMEPAD(Crew *this) {
 
 	return LIVE;
 }
