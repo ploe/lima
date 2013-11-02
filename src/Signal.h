@@ -4,7 +4,7 @@
 
 Status SIGNALS(Crew *signals);
 
-int signal(char *s);
+int Signal(char *s);
 void emit(char *s);
 void persist(char *s);
 
