@@ -35,6 +35,7 @@ static int getfield_Actor(Actor *a, const char *key) {
 	lua_rawgeti(L, LUA_REGISTRYINDEX, a->t);
 	lua_getfield(L, -1, key);
 	lua_remove(L, -2);
+	return !(lua_isnil(L, -1));
 }
 
 /*	sets Actor's field at top of stack	*/
@@ -79,6 +80,26 @@ static Actor *find_Actor(int i) {
 	return a;
 }
 
+/*	terse static functions like this truncate other functions thereby 
+	they're good */
+
+static void counters_Actor(Actor *a) {
+	if(getfield_Actor(a, "reel")) {
+		lua_pushnumber(L, 0);
+		setfield_Actor(a, "reel");
+	}
+
+	if(getfield_Actor(a, "frame")) {
+		lua_pushnumber(L, 1);
+		setfield_Actor(a, "frame");
+	}
+
+	if(getfield_Actor(a, "reel")) {
+		lua_pushnumber(L, 0);
+		setfield_Actor(a, "ticks");
+	}
+}
+
 /*	lnew_Actor - function Actor(self)
 	we tear the Sprite information out of Lua. We do this because these
 	attributes are only valid for init, the rest of the time they're stored
@@ -86,13 +107,17 @@ static Actor *find_Actor(int i) {
 
 
 static int lnew_Actor(lua_State *L) {
-	Actor *a;
-	if(!(a = new_Actor(NULL))) {
+	#define table 1
+
+	Actor *a = find_Actor(table);
+	if(!a && !(a = new_Actor(NULL))) { 
 		lua_pushnil(L);
 		return 0;
-		
 	}
-	if(lua_istable(L, -1)) {
+	stackdump();
+	lua_pop(L, 1);
+
+	if(lua_istable(L, table)) {
 		luaL_unref(L, LUA_REGISTRYINDEX, a->t);
 		a->t = luaL_ref(L, LUA_REGISTRYINDEX);
 
@@ -112,14 +137,7 @@ static int lnew_Actor(lua_State *L) {
 		nilfield_Actor(a, "costume");
 		lua_pop(L, 1);
 
-		lua_pushnumber(L, 0);
-		setfield_Actor(a, "reel");
-
-		lua_pushnumber(L, 1);
-		setfield_Actor(a, "frame");
-
-		lua_pushnumber(L, 0);
-		setfield_Actor(a, "ticks");
+		counters_Actor(a);
 	
 	}
 	else if(!lua_isnil(L, -1)) fputs("Lua Actor type has to be a table or nil", stderr);
@@ -129,6 +147,7 @@ static int lnew_Actor(lua_State *L) {
 	lua_setmetatable(L, -2);
 
 	return 1;
+	#undef table
 }
 
 /*	lcostume will be a method for the Actor class in Lua, it's why its name

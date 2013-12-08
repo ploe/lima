@@ -24,16 +24,16 @@ static int get_Signal(int t, char *s) {
 	We check the EMIT table first to keep things fast for silly frame 
 	based things... */
 
-int Signal(char *s) {
+int cue(char *s) {
 	if(get_Signal(EMIT, s)) return YES;
 	lua_pop(L, 1);
 	if(get_Signal(PERSIST, s)) return YES;
 	return NO;
 }
 
-static int lsignal(lua_State *L) {
+static int lcue(lua_State *L) {
 	#define msg 1
-	if(lua_isstring(L, -1) && Signal((char *) lua_tostring(L, msg)) ) return 1;
+	if(lua_isstring(L, -1) && cue((char *) lua_tostring(L, msg)) ) return 1;
 	return 0;
 	#undef msg
 }
@@ -103,7 +103,7 @@ Status SIGNALS(Crew *signals) {
 	PERSIST = luaL_ref(L, LUA_REGISTRYINDEX);
 	lua_register(L, "persist", lpersist);
 	
-	lua_register(L, "signal", lsignal);
+	lua_register(L, "cue", lcue);
 
 	signals->update = update_signals;
 	return LIVE;

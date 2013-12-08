@@ -6,6 +6,8 @@ extern SDL_Surface *port;
 Status STAGE(Crew *);
 void setviewport_Stage(int x, int y);
 SDL_Rect getviewport_Stage();
+
+void serialize(int i);
 void stackdump();
 
 #endif

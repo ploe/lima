@@ -104,6 +104,109 @@ static int lstackdump(lua_State *L) {
 	return 0;
 }
 
+/*	serialization function constants
+	I haven't used an enum because I can curb their scope with a macro	
+
+	TABLE is the table we want to serialize 
+	ARRAY is the buffer where we store the numbered indices so we don't 
+	try to render them as key-value pairs 
+	KEY is the index for the TABLE
+	VALUE is the value for TABLE[KEY]	*/
+
+#define TABLE 1
+#define ARRAY 2
+#define KEY 3
+#define VALUE 4
+
+static void serialize_Array() {
+	/*	push ARRAY to the stack	*/
+	lua_newtable(L);
+	int i, max = lua_rawlen(L, TABLE);
+	for(i = 1; i <= max; i++) {
+		lua_rawgeti(L, TABLE, i);
+		switch(lua_type(L, -1)) {
+			case LUA_TNUMBER:
+				printf("%f,", lua_tonumber(L, -1));
+			break;
+
+			case LUA_TBOOLEAN:
+				printf("%s,", lua_toboolean(L, -1) ? "true": "false" ); 
+			break;
+
+			case LUA_TSTRING:
+				printf("\"%s\",", lua_tostring(L, -1)); 
+			break;
+
+			case LUA_TTABLE:
+				serialize(-1);
+				printf(","); 
+			break;
+		}
+		lua_rawseti(L, ARRAY, i);
+
+		lua_pushnil(L);
+		lua_rawseti(L, TABLE, i);
+	}
+}
+
+static void repopulate_Array() {
+	int i, max = lua_rawlen(L, ARRAY);
+	for(i = 1; i <= max; i++) {
+		lua_rawgeti(L, ARRAY, i);
+		lua_rawseti(L, TABLE, i);	
+	}
+}
+
+static void serialize_Hash() {
+	lua_pushnil(L);
+	while(lua_next(L, TABLE)) {
+		switch(lua_type(L, VALUE)) {
+			case LUA_TNUMBER:
+				printf("%s=%f,", lua_tostring(L, KEY), lua_tonumber(L, VALUE)); 
+			break;
+
+			case LUA_TBOOLEAN:
+				printf("%s=%s,", lua_tostring(L, KEY), lua_toboolean(L, VALUE) ? "true": "false" ); 
+			break;
+
+			case LUA_TSTRING:
+				printf("%s=\"%s\",", lua_tostring(L, KEY), lua_tostring(L, VALUE)); 
+			break;
+
+			case LUA_TTABLE:
+				printf("%s=", lua_tostring(L, KEY));
+				serialize(VALUE);
+				printf(",");
+			break;
+		}
+		lua_pop(L, 1);
+	}
+}
+
+static int lserialize(lua_State *L) {	
+	if(!lua_istable(L, TABLE)) return 0;
+
+	printf("{");
+	serialize_Array();
+	serialize_Hash();
+	repopulate_Array();
+	printf("}");
+
+	return 0;	
+}
+
+void serialize(int i) {
+	lua_getglobal(L, "serialize");
+	lua_pushvalue(L, i);
+	lua_call(L, 1, 0);
+}
+
+#undef TABLE
+#undef KEY
+#undef VALUE
+#undef ARRAY 
+
+
 Status STAGE(Crew *stage) {
 	stage->free = stage_free;
 	stage->update = stage_update;
@@ -125,6 +228,7 @@ Status STAGE(Crew *stage) {
 
 	lua_register(L, "Crew", lnew_Crew);
 	lua_register(L, "stackdump", lstackdump);
+	lua_register(L, "serialize", lserialize);
 
 	if(luaL_loadfile(L, "res/debug.lua") || lua_pcall(L, 0, 0, 0)) {
 		fprintf(stderr, "Failed to load configuration file, so scrapped: %s\n", lua_tostring(L, -1));
@@ -152,8 +256,8 @@ void stackdump() {
 			break;
 
 			case LUA_TNUMBER:
-                fprintf(stderr, "%d: number => %g \n", i, lua_tonumber(L, i));
-            break;
+                		fprintf(stderr, "%d: number => %g \n", i, lua_tonumber(L, i));
+			break;
 
 			default:
 				fprintf(stderr, "%d: %s \n", i, lua_typename(L, t));

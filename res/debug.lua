@@ -9,14 +9,14 @@ function filthy:animate()
 	puts("crazee")
 end
 
-signaltest = Crew {
+cuetest = Crew {
 	update = function(self)
 		if persist and emit then 
 			persist("hello, world")
 			emit { tag = "lolemit", racist = "yes"  }
 			emit { notag = true  }
-			if signal "hello, world" then print("hello world is emitted") end
-			if signal "lolemit" then print("emitted nil") end
+			if cue "hello, world" then print("hello world is emitted") end
+			if cue "lolemit" then print("emitted nil") end
 			return "CUT"
 		end
 		return "CUT"
@@ -27,7 +27,15 @@ signaltest = Crew {
 	animate = "LOL"
 }]]
 
+
+local RIGHT = 0
+local LEFT = 1
+
+local BOIL_REEL = 0
+local RUN_REEL = 2
+
 daisy = Actor {
+	true,"lol wut",1,2,3,4,5,
 	tag = "daisy chane",
 	costume = "daisy-flat.png",
 	w = 100,
@@ -38,7 +46,12 @@ daisy = Actor {
 	visible = true,
 	x = 800,
 	y = 200,
-	vector = 10
+	vector = 10,
+	facing = RIGHT,
+	nest = {murgh = "yes",yarp = "no"},
+	troo = true,
+	faux = false,
+	array = {1, 2, 3, 4, 5},6,7,8
 }
 
 brum = Actor {
@@ -85,23 +98,12 @@ add it up in Lua which removes a little more of the boilerplate bullshit
 nextclip, prevclip and jumpclip could all increment the frame counter 
 which again removes a little more of the boilerplate stuff. ]]
 
-function daisy:skid()
-	if self.ticks % 3 then
-		if self.running == 1 then return self.boil end
-		self.running = self.running - 1 
-	end
-
-	self.x = self.x + (self.vector * self.running)
-	self:focus()
-	return self.skid
-end
-
 function daisy:boil()
-	local left = signal("PLAYER_LEFT")
-    local right = signal("PLAYER_RIGHT")
+	local left = cue("PLAYER_LEFT")
+	local right = cue("PLAYER_RIGHT")
 
 	if (left and not right) or (not left and right) then return self.run end
-	if self.reel ~= 0 then self:jumpreel(0) end
+	if self.reel ~= (BOIL_REEL + self.facing) then self:jumpreel(BOIL_REEL + self.facing) end
 
 	if self.ticks == 3 then
 		if (is_even(self.frame)) then self:prevclip()
@@ -116,25 +118,21 @@ end
 -- perhaps I should call it setreel? Shorter... though the word jumpreel looks more... right!
 
 function daisy:run()
-	local left = signal("PLAYER_LEFT")
-	local right = signal("PLAYER_RIGHT")
+	local left = cue("PLAYER_LEFT")
+	local right = cue("PLAYER_RIGHT")
 
-	if(left and right) or (not left and not right) then return self.skid
-	elseif left then self.vector = -8
-	elseif right then self.vector = 8 end
-
-	if right and (self.reel ~= 1) then
-		self:jumpreel(1)
-		self.running = 1
-	elseif left and (self.reel ~= 2) then
-		self:jumpreel(2)
-		self.running = 1
+	if(left and right) or (not left and not right) then return self.boil
+	elseif left then 
+		self.vector = -20
+		self.facing = LEFT
+	elseif right then 
+		self.vector = 20
+		self.facing = RIGHT
 	end
 
-	if self.ticks == 3 then
---		if(self.mode < 25) then self.mode = self.mode + self.ticks
---		else self.running = 2 end
+	if self.reel ~= (RUN_REEL + self.facing) then self:jumpreel(RUN_REEL + self.facing) end
 
+	if self.ticks == 2 then
 		if self.frame == 1 
 		or self.frame == 2 then
 			self:nextclip()
@@ -144,12 +142,15 @@ function daisy:run()
 		end
 
 		if self.frame == 5 then 
-			self.running = self.running + 1
 			self.frame = 1 
 		end
 	end
 	self:focus()
-	self.x = self.x + (self.vector * self.running)
+	self.x = self.x + self.vector
 
 	return self.run	
 end
+
+serialize(daisy)
+print "\n"
+serialize(daisy)
