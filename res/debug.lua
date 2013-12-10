@@ -5,6 +5,14 @@ filthy = Crew {
 	end
 }
 
+Crew {
+	update = function(self)
+		local mouse = cue "MOUSE"
+		if mouse and mouse["left"] then serialize(mouse) print "" end
+		return "LIVE"
+	end
+}
+
 function filthy:animate()
 	puts("crazee")
 end

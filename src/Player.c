@@ -13,38 +13,60 @@ SDL_Joystick *joystick;
 #define X_AXIS 0
 #define Y_AXIS 1
 
+static void pushbutton_Mouse(int button) {
+	switch(button) {
+		case SDL_BUTTON_LEFT: lua_pushstring(L, "left"); break;
+		case SDL_BUTTON_RIGHT: lua_pushstring(L, "right"); break;
+		case SDL_BUTTON_WHEELUP: lua_pushstring(L, "up"); break;
+		case SDL_BUTTON_WHEELDOWN: lua_pushstring(L, "down"); break;
+	}
+
+	if(lua_isstring(L, -1)) {
+		lua_pushboolean(L, YES);
+		lua_rawset(L, -3);
+		serialize(-1);
+	}
+}
+
+static void move_Mouse() {
+	lua_pushstring(L, "x");
+	lua_pushnumber(L, mouse.x);
+	lua_rawset(L, -3);
+
+	lua_pushstring(L, "y");
+	lua_pushnumber(L, mouse.y);
+	lua_rawset(L, -3);	
+} 
+
 static Status update_player(Crew *this) {
+	lua_getglobal(L, "emit");
+	lua_newtable(L);
+
+	lua_pushstring(L, "tag");
+	lua_pushstring(L, "MOUSE");
+	lua_rawset(L, -3);
+
+	move_Mouse();
+
 	SDL_Event event;
-    while(SDL_PollEvent(&event)) {
-        switch(event.type) {
-            case SDL_QUIT:
-                return WRAP;
-            break;
-
-            case SDL_MOUSEBUTTONDOWN:   /*  all button handling done by routines    */
-                if((event.button.button == SDL_BUTTON_LEFT)) puts("left");
-                else if((event.button.button == SDL_BUTTON_RIGHT)) puts("right");
-                else if((event.button.button == SDL_BUTTON_WHEELUP)) puts("wheelup");
-                else if((event.button.button == SDL_BUTTON_WHEELDOWN)) puts("wheeldown");
-            break;
-
-            case SDL_MOUSEMOTION:
-                mouse.x = event.motion.x;
-                mouse.y = event.motion.y;
-            break;
-
-			case SDL_JOYAXISMOTION:
-				if((event.jaxis.which == 0)) {
-					if(event.jaxis.axis == X_AXIS) {
-						printf("x axis value: %d\n", event.jaxis.value);
-						if ( ( event.jaxis.value > -8000 ) && ( event.jaxis.value < 8000 ) ) break;
-						if(event.jaxis.value < 0) emit("PLAYER_LEFT");
-						else if(event.jaxis.value > 0) emit("PLAYER_RIGHT");
-					}
-				}
+	while(SDL_PollEvent(&event)) {
+		switch(event.type) {
+			case SDL_QUIT:
+				return WRAP;
 			break;
-        }
-    }
+
+			case SDL_MOUSEBUTTONDOWN:   /*  all button handling done by routines    */
+				pushbutton_Mouse(event.button.button);
+			break;			
+	
+			case SDL_MOUSEMOTION:
+				mouse.x = event.motion.x;
+				mouse.y = event.motion.y;
+			break;
+	
+		}
+	}
+	lua_call(L, 1, 0);
 	return LIVE;
 }
 
