@@ -1,4 +1,4 @@
-#include "lime.h"
+#include "lima.h"
 
 /*	The Stage is the output of the program, kinda, it encapsulates the libs.
 	It's in charge of the Lua state, SDL and other stuff the game needs to be a game.

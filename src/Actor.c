@@ -1,4 +1,4 @@
-#include "lime.h"
+#include "lima.h"
 
 static Actor *top = NULL;
 

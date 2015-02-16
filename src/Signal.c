@@ -1,4 +1,4 @@
-#include "lime.h"
+#include "lima.h"
 
 /*	The 'filehandles' for the Signal system are EMIT and PERSIST. The
 	difference between the two is that signals that are set with emit are

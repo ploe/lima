@@ -1,4 +1,4 @@
-#include "lime.h"
+#include "lima.h"
 
 typedef struct Mouse {
 	int x, y;

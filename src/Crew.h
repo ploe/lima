@@ -12,7 +12,7 @@
 	* LIVE means the Crewman will live onto the next frame.
 	* CUT means the Crewman will be freed.
 	* PAUSE causes the Crewman to not execute its update function.
-	* WRAP kills lime entirely	*/
+	* WRAP kills lima entirely	*/
 
 typedef int Status;
 enum {

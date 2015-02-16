@@ -1,4 +1,4 @@
-#include "lime.h"
+#include "lima.h"
 
 /*	I've gone with pushing all sprites to the heap for this one reason, and it's a doozy.
 	I don't have to pass an extra 's' param in to new_Sprite.
